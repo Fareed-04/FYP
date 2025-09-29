@@ -16,6 +16,12 @@ DEFAULT_INPUT = "property_walkthrough3.mp4"
 CROP_DIR = "crops"
 os.makedirs(CROP_DIR, exist_ok=True)
 
+# Output directories for annotations
+ANNOTATED_IMAGES_DIR = "annotated_images"
+ANNOTATED_VIDEOS_DIR = "annotated_videos"
+os.makedirs(ANNOTATED_IMAGES_DIR, exist_ok=True)
+os.makedirs(ANNOTATED_VIDEOS_DIR, exist_ok=True)
+
 FURNITURE_CLASSES = {"chair", "couch", "sofa", "bed", "dining table", "tv", "bench"}
 CONF_THRESHOLD = 0.3
 # ----------------------------------------
@@ -65,8 +71,9 @@ def process_image(img_path):
     # save annotated image
     annotated = result.plot()
     annotated_name = "annotated_" + os.path.basename(img_path)
-    cv2.imwrite(annotated_name, annotated)
-    print("Saved annotated image:", annotated_name)
+    annotated_path = os.path.join(ANNOTATED_IMAGES_DIR, annotated_name)
+    cv2.imwrite(annotated_path, annotated)
+    print("Saved annotated image:", annotated_path)
 
 # ---------- VIDEO PROCESSING ----------
 def process_video(video_path):
@@ -78,7 +85,9 @@ def process_video(video_path):
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out_w, out_h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS) or 25
-    annotated_out = cv2.VideoWriter("annotated_" + os.path.basename(video_path), fourcc, fps, (out_w, out_h))
+    annotated_video_name = "annotated_" + os.path.basename(video_path)
+    annotated_video_path = os.path.join(ANNOTATED_VIDEOS_DIR, annotated_video_name)
+    annotated_out = cv2.VideoWriter(annotated_video_path, fourcc, fps, (out_w, out_h))
 
     tracker = DeepSort(max_age=30)
     saved_ids = set()
@@ -151,7 +160,7 @@ def process_video(video_path):
     cap.release()
     annotated_out.release()
     print("Video processing complete. Crops in", CROP_DIR, "Annotated video saved as:",
-          "annotated_" + os.path.basename(video_path))
+          annotated_video_path)
 
 # ---------- MAIN ----------
 ext = os.path.splitext(INPUT_PATH)[1].lower()

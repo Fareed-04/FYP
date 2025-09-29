@@ -1,0 +1,10 @@
+# Example data.yaml content
+path: C:\Users\hassa\Documents\FYP\chairs_data
+train: C:\Users\hassa\Documents\FYP\chairs_data\train
+val: C:\Users\hassa\Documents\FYP\chairs_data\train
+
+# Number of classes
+nc: 1
+
+# Class names in the order they appear in your Label Studio labels
+names: ['chair_new']
