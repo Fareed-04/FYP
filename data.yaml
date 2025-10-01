@@ -1,7 +1,7 @@
 # Example data.yaml content
-path: C:\Users\hassa\Documents\FYP\chairs_data
-train: C:\Users\hassa\Documents\FYP\chairs_data\train
-val: C:\Users\hassa\Documents\FYP\chairs_data\train
+path: chairs_data
+train: chairs_data/train
+val: chairs_data/train
 
 # Number of classes
 nc: 1
