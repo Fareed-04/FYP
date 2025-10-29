@@ -23,22 +23,18 @@ os.makedirs(ANNOTATED_VIDEOS_DIR, exist_ok=True)
 
 # Furniture classes with condition mapping
 FURNITURE_CLASSES = {
-    0: "chair_new",
-    1: "chair_broken", 
-    2: "chair_wornout",
-    3: "sofa_new",
-    4: "sofa_broken",
-    5: "sofa_wornout",
-    6: "table_new",
-    7: "table_broken",
-    8: "table_wornout"
+    0: "chair_broken",
+    1: "chair_wornout",
+    2: "sofa_broken",
+    3: "sofa_wornout",
+    4: "table_broken",
+    5: "table_wornout"
 }
 
 CONF_THRESHOLD = 0.3
 
 # Condition colors for visualization
 CONDITION_COLORS = {
-    "new": (0, 255, 0),      # Green
     "broken": (0, 0, 255),   # Red  
     "wornout": (0, 165, 255) # Orange
 }
@@ -46,9 +42,7 @@ CONDITION_COLORS = {
 def get_condition_from_class(class_id):
     """Get condition from class ID"""
     class_name = FURNITURE_CLASSES.get(class_id, "unknown")
-    if "new" in class_name:
-        return "new"
-    elif "broken" in class_name:
+    if "broken" in class_name:
         return "broken"
     elif "wornout" in class_name:
         return "wornout"

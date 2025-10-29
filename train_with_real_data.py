@@ -25,7 +25,7 @@ def create_yolo_dataset():
     
     # Define classes and conditions
     furniture_types = ["chair", "sofa", "table"]
-    conditions = ["new", "broken", "wornout"]
+    conditions = ["broken", "wornout"]
     
     # Create class mapping
     class_mapping = {}
