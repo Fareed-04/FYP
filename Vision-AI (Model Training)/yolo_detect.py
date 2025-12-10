@@ -125,6 +125,13 @@ frame_rate_buffer = []
 fps_avg_len = 200
 img_count = 0
 
+# Create crops directory in the same location as the script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+crops_dir = os.path.join(script_dir, 'crops')
+os.makedirs(crops_dir, exist_ok=True)
+crop_counter = 0  # Counter for unique crop filenames
+print(f'Crops will be saved to: {crops_dir}')
+
 # Begin inference loop
 while True:
 
@@ -198,6 +205,14 @@ while True:
             cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), color, cv2.FILLED) # Draw white box to put label text in
             cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1) # Draw label text
 
+            # Crop and save detected object
+            crop = frame[ymin:ymax, xmin:xmax]
+            if crop.size > 0:  # Make sure crop is valid
+                crop_filename = f'{classname}_{int(conf*100)}_{crop_counter}.jpg'
+                crop_path = os.path.join(crops_dir, crop_filename)
+                cv2.imwrite(crop_path, crop)
+                crop_counter += 1
+
             # Basic example: count the number of objects in the image
             object_count = object_count + 1
 
@@ -240,6 +255,8 @@ while True:
 
 # Clean up
 print(f'Average pipeline FPS: {avg_frame_rate:.2f}')
+print(f'Total crops saved: {crop_counter}')
+print(f'Crops saved to: {os.path.abspath(crops_dir)}')
 if source_type == 'video' or source_type == 'usb':
     cap.release()
 elif source_type == 'picamera':
