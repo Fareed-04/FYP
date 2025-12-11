@@ -1,0 +1,101 @@
+# ============================================================
+# VisionAI - DVC Pipeline Definition
+# ============================================================
+# This file defines the reproducible ML pipeline stages
+# Run with: dvc repro
+
+stages:
+  # Stage 1: Data Preparation
+  prepare_data:
+    cmd: >
+      python computer-vision/src/preprocess.py create-dataset
+      --source computer-vision/data/raw
+      --output computer-vision/data/processed
+      --split ${data.train_split}
+    deps:
+      - computer-vision/data/raw
+      - computer-vision/src/preprocess.py
+    params:
+      - data.train_split
+      - data.val_split
+    outs:
+      - computer-vision/data/processed:
+          cache: false  # Don't cache if using DVC for data versioning
+
+  # Stage 2: Model Training
+  train:
+    cmd: >
+      python computer-vision/src/train.py
+      --data computer-vision/data/processed/data.yaml
+      --model ${model.architecture}
+      --epochs ${train.epochs}
+      --batch ${train.batch_size}
+      --lr ${train.learning_rate}
+      --patience ${train.patience}
+      --project ${output.runs_dir}
+      --dagshub-owner ${experiment.dagshub_owner}
+      --dagshub-repo ${experiment.dagshub_repo}
+    deps:
+      - computer-vision/data/processed
+      - computer-vision/src/train.py
+      - computer-vision/src/utils.py
+    params:
+      - model.architecture
+      - model.input_size
+      - train.epochs
+      - train.batch_size
+      - train.learning_rate
+      - train.patience
+    outs:
+      - ${output.runs_dir}:
+          cache: false
+    metrics:
+      - ${output.runs_dir}/*/results.csv:
+          cache: false
+    plots:
+      - ${output.runs_dir}/*/results.png:
+          cache: false
+
+  # Stage 3: Model Evaluation (Optional)
+  evaluate:
+    cmd: >
+      python computer-vision/src/inference.py
+      --model ${output.runs_dir}/train/weights/best.pt
+      --source computer-vision/data/processed/val/images
+      --output evaluation_results
+      --no-display
+    deps:
+      - ${output.runs_dir}/train/weights/best.pt
+      - computer-vision/data/processed/val/images
+      - computer-vision/src/inference.py
+    outs:
+      - evaluation_results:
+          cache: false
+
+  # Stage 4: Export Best Model
+  export_model:
+    cmd: >
+      python -c "
+      import shutil;
+      shutil.copy('${output.runs_dir}/train/weights/best.pt', 'computer-vision/models/best.pt');
+      print('Model exported to computer-vision/models/best.pt')
+      "
+    deps:
+      - ${output.runs_dir}/train/weights/best.pt
+    outs:
+      - computer-vision/models/best.pt:
+          cache: false
+
+# ============================================================
+# Plots Configuration
+# ============================================================
+plots:
+  - training_metrics:
+      x: epoch
+      y:
+        ${output.runs_dir}/*/results.csv:
+          - train/box_loss
+          - train/cls_loss
+          - metrics/mAP50(B)
+          - metrics/mAP50-95(B)
+
